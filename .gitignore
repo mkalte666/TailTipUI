@@ -73,3 +73,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+*.opensdf
+win/TailTipUI/x86/*
+win/TailTipUI/x64/*
+win/TailTipUI/Debug/*
