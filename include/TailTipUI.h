@@ -6,6 +6,7 @@
 #include <thread>
 #include <cmath>
 #include <algorithm>
+#include <list>
 //sdl-foo
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -14,6 +15,13 @@
 #include <glm/glm.hpp>
 
 namespace TailTipUI {
+
+	//Callbacks that will be called on events (hover, click, ...)
+	typedef  std::function<void(std::string)> ElementCallbackType;
+	//callback set in root element that should deliver a mouse position and states of the left and right mousebutton.
+	typedef  std::function<glm::vec4()> MouseinfoCallbackType;
+	//callback set in root element that shold deliver the current keycodes
+	typedef  std::function<SDL_Keycode()> ButtoninfoCallbackType;
 
 	GLuint SurfaceToTexture(SDL_Surface* s);
 	void RenderElementByTexture(GLuint tex, glm::vec4 pos);
@@ -34,8 +42,15 @@ namespace TailTipUI {
 
 		virtual void SetHidden(bool isHidden);
 		virtual bool GetHidden();
+
 		virtual void SetPos(glm::vec4 position);
 		virtual glm::vec4 GetPos();
+
+		virtual void SetDraggable(bool isdraggable);
+		virtual bool GetDraggable();
+		virtual bool IsCurrentlyDragged();
+		virtual void SetBlockParentdragging(bool isdraggable);
+		virtual bool GetBlockParentdragging();
 
 		virtual void SetName(std::string newname);
 		virtual std::string GetName();
@@ -49,6 +64,16 @@ namespace TailTipUI {
 
 		virtual void SetFont(TTF_Font* newfont);
 		virtual TTF_Font* GetFont();
+
+		virtual bool GetHover();
+		virtual bool GetLeftclick();
+		virtual bool GetRightclick();
+		virtual void SetHoverCallback(ElementCallbackType c);
+		virtual void GetLeftclickCallback(ElementCallbackType c);
+		virtual void GetRightclickCallback(ElementCallbackType c);
+
+		virtual glm::vec4 GetMouseInfo();
+		virtual SDL_Keycode GetCurrentButton();
 
 	private:
 
@@ -66,6 +91,19 @@ namespace TailTipUI {
 		TTF_Font* font;
 
 		bool hidden;
+		bool draggable;
+		bool isDragged;
+		bool blockParentdragging;
+
+		glm::vec4 draggmouse;
+		SDL_Keycode draggkey;
+		bool oldHoverstate;
+
+		ElementCallbackType HoverCallback;
+		ElementCallbackType LeftCallback;
+		ElementCallbackType RightCallback;
+
+		virtual void _Render();
 	};
 
 	class ChildElement : public GeneralElement {
@@ -88,10 +126,18 @@ namespace TailTipUI {
 
 		virtual void AttatchChild(ChildElement* child);
 		virtual void DeattatchChild(ChildElement* child);
-		virtual void Render();
+		virtual void Render() override;
+
+		virtual glm::vec4 GetMouseInfo() override;
+		virtual SDL_Keycode GetCurrentButton() override;
+
+		virtual void SetMouseCallback(MouseinfoCallbackType c);
+		virtual void SetButtonCallback(ButtoninfoCallbackType c);
 	private:
 		GLuint framebuffer;
 
+		MouseinfoCallbackType mousecallback;
+		ButtoninfoCallbackType buttoncallback;
 	protected:
 	};
 

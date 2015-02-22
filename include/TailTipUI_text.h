@@ -12,7 +12,7 @@ namespace TailTipUI {
 		virtual void SetFont(TTF_Font* newfont) override;
 		virtual void SetName(std::string newname) override;
 		virtual void SetForgroundColor(glm::vec4 color) override;
-		virtual void Render() override;
+		
 		
 	private:
 		
@@ -20,6 +20,7 @@ namespace TailTipUI {
 		GLuint tex;
 
 	protected:
+		virtual void _Render() override;
 		void _UpdateText();
 	};
 };

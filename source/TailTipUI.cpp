@@ -8,6 +8,10 @@ namespace TailTipUI {
 		hidden = false;
 		parent = nullptr;
 		font = nullptr;
+		draggable = false;
+		blockParentdragging = true;
+		oldHoverstate = false;
+		isDragged = false;
 	}
 	 
 	GeneralElement::~GeneralElement() 
@@ -73,19 +77,69 @@ namespace TailTipUI {
 		return name;
 	}
 
+	//Render also updates the callbaks, ...
 	void GeneralElement::Render() 
 	{
 		if (hidden) return;
+		glm::vec4 mouse = GetMouseInfo();
+		SDL_Keycode key = GetCurrentButton();
+		bool hoverstate = GetHover();
+		if (hoverstate && !oldHoverstate) {
+			if (HoverCallback)
+				HoverCallback(name);
+		}
+		oldHoverstate = hoverstate;
+		
+		if (isDragged) {
+			if (draggmouse[2] == 1) {
+				glm::vec4 absolutePosition = RelativePositionToParent();
+				glm::vec2 absoluteMovement((mouse.x - draggmouse.x), (mouse.y - draggmouse.y));
+				glm::vec2 relativeMovement(absoluteMovement.x*(pos[2] / absolutePosition[2]), absoluteMovement.y*(pos[3] / absolutePosition[3]));
+				pos = pos + glm::vec4(relativeMovement, 0.0f, 0.0f);
+				if (pos.x < 0.0f) pos.x = 0.0f;
+				if (pos.y < 0.0f) pos.y = 0.0f;
+				if (pos.x + pos[2] > 1.0) pos.x = 1 - pos[2];
+				if (pos.y + pos[3] > 1.0) pos.y = 1 - pos[3];
+			}
+		}
+		if (GetLeftclick()) {
+			if (draggable) {
+				//Only dragg if no child is hoverd that is dragable and does not block parentdragging
+				bool childBlock = false;
+				for (auto c : children) {
+					childBlock |= c->GetHover() && (c->GetDraggable() || c->GetBlockParentdragging()) || c->IsCurrentlyDragged();
+				}
+				isDragged = !childBlock;
+			}
+			if (draggmouse[2] == 0) {
+				if (LeftCallback)
+					LeftCallback(name);
+			}
+		}
+		else {
+			isDragged = false;
+		}
+		if (GetRightclick() && draggmouse[3] == 0) {
+			if (RightCallback)
+				RightCallback(name);
+		}
+		draggmouse = mouse;
+		draggkey = key;
+		_Render();
 		for (auto c : children) {
 			c->Render();
 		}
+	}
+
+	void GeneralElement::_Render() 
+	{
 	}
 
 	glm::vec4 GeneralElement::RelativePositionToParent() {
 		if (parent == nullptr) {
 			return pos;
 		}
-		glm::vec4 parentPos = parent->GetPos();
+		glm::vec4 parentPos = parent->RelativePositionToParent();
 		return glm::vec4(parentPos[0] + pos[0] * parentPos[2], parentPos[1] + pos[1] * parentPos[3], pos[2] * parentPos[2], pos[3] * parentPos[3]);
 	}
 
@@ -117,6 +171,81 @@ namespace TailTipUI {
 	TTF_Font* GeneralElement::GetFont()
 	{
 		return font;
+	}
+
+	void GeneralElement::SetDraggable(bool isdraggable)
+	{
+		draggable = isdraggable;
+	}
+
+	bool GeneralElement::GetDraggable()
+	{
+		return draggable;
+	}
+
+	bool GeneralElement::IsCurrentlyDragged()
+	{
+		return isDragged;
+	}
+	
+	void GeneralElement::SetBlockParentdragging(bool isdraggable)
+	{
+		blockParentdragging = isdraggable;
+	}
+
+	bool GeneralElement::GetBlockParentdragging()
+	{
+		return blockParentdragging;
+	}
+
+
+	bool GeneralElement::GetHover()
+	{
+		glm::vec4 relativePos = RelativePositionToParent();
+		glm::vec4 mpos = GetMouseInfo();
+		return (mpos.x >= relativePos.x && mpos.y >= relativePos.y && mpos.x <= (relativePos.x + relativePos[2]) && mpos.y <= (relativePos.y + relativePos[3]));
+	}
+
+	bool GeneralElement::GetLeftclick()
+	{
+		glm::vec4 mpos = GetMouseInfo();
+		return (GetHover() && mpos[2] != 0.0);
+	}	
+	
+	bool GeneralElement::GetRightclick()
+	{
+		glm::vec4 mpos = GetMouseInfo();
+		return (GetHover() && mpos[3] != 0.0);
+	}
+
+	void GeneralElement::SetHoverCallback(ElementCallbackType c)
+	{
+		HoverCallback = c;
+	}
+
+	void GeneralElement::GetLeftclickCallback(ElementCallbackType c)
+	{
+		LeftCallback = c;
+	}
+	void GeneralElement::GetRightclickCallback(ElementCallbackType c)
+	{
+		RightCallback = c;
+	}
+
+	glm::vec4 GeneralElement::GetMouseInfo()
+	{
+		if (parent == nullptr) {
+			return glm::vec4(0);
+		}
+		return parent->GetMouseInfo();
+	}
+
+	SDL_Keycode GeneralElement::GetCurrentButton()
+	{
+		if (parent == nullptr) {
+			return NULL;
+		}
+		return parent->GetCurrentButton();
 	}
 
 	ChildElement::ChildElement() 
@@ -162,6 +291,29 @@ namespace TailTipUI {
 		glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
 	}
 
+	glm::vec4 Root::GetMouseInfo() 
+	{
+		if (mousecallback)
+			return mousecallback();
+		return glm::vec4(0);
+	}
+
+	SDL_Keycode Root::GetCurrentButton()
+	{
+		if (buttoncallback)
+			return buttoncallback();
+		return NULL;
+	}
+
+	void Root::SetMouseCallback(MouseinfoCallbackType c)
+	{
+		mousecallback = c;
+	}
+
+	void Root::SetButtonCallback(ButtoninfoCallbackType c)
+	{
+		buttoncallback = c;
+	}
 
 	//below the blody opengl foo and texture management and stuff
 	const char* vertexShader =

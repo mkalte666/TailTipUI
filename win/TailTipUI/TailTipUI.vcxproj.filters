@@ -24,6 +24,9 @@
     <ClInclude Include="..\..\include\TailTipUI_area.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\TailTipUI_button.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\TailTipUI.cpp">

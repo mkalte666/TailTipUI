@@ -9,11 +9,7 @@ namespace TailTipUI {
 		bgcolor = background;
 	}
 
-	void Area::Render() {
-		if (hidden) return;
-
+	void Area::_Render() {
 		RenderSingleColor(bgcolor, RelativePositionToParent());
-
-		GeneralElement::Render();
 	}
 };

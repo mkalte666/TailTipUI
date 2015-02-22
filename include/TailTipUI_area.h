@@ -9,7 +9,8 @@ namespace TailTipUI {
 		Area();
 		Area(glm::vec4 background);
 
-		virtual void Render() override;
+	protected:
+		virtual void _Render() override;
 	};
 
 };

@@ -40,16 +40,12 @@ namespace TailTipUI {
 		_UpdateText();;
 	}
 
-	void Text::Render() {
-		if (hidden) return;
-
+	void Text::_Render() {
 		if (font != nullptr && name != "" && tex != 0) {
 			glm::vec4 renderpos = RelativePositionToParent();
 			renderpos[2] = renderpos[3] * textsizeratio;
 			RenderElementByTexture(tex, renderpos);
 		}
-
-		GeneralElement::Render();
 	}
 
 	void Text::_UpdateText() {

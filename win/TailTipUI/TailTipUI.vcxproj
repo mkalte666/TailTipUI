@@ -140,6 +140,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\TailTipUI.h" />
     <ClInclude Include="..\..\include\TailTipUI_area.h" />
+    <ClInclude Include="..\..\include\TailTipUI_button.h" />
     <ClInclude Include="..\..\include\TailTipUI_text.h" />
   </ItemGroup>
   <ItemGroup>
