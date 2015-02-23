@@ -24,8 +24,8 @@ namespace TailTipUI {
 	typedef  std::function<SDL_Keycode()> ButtoninfoCallbackType;
 
 	GLuint SurfaceToTexture(SDL_Surface* s);
-	void RenderElementByTexture(GLuint tex, glm::vec4 pos);
-	void RenderSingleColor(glm::vec4 color, glm::vec4 pos);
+	void RenderElementByTexture(GLuint tex, glm::vec4 pos, glm::vec4 radiusKomponent = glm::vec4(0), float b = 0.1f, float s = 0.05f);
+	void RenderSingleColor(glm::vec4 color, glm::vec4 pos, glm::vec4 radiusKomponent = glm::vec4(0), float b = 0.1f, float s = 0.05f);
 
 	class GeneralElement {
 	public:
@@ -61,6 +61,13 @@ namespace TailTipUI {
 		virtual void SetBackgroundColor(glm::vec4 color);
 		virtual glm::vec4 GetForgroundColor();
 		virtual glm::vec4 GetBackgroundColor();
+
+		virtual void SetRadius(glm::vec4 r);
+		virtual void SetRadiusSmoothing(float s);
+		virtual void SetRadiusParameter(float b);
+		virtual glm::vec4 GetRadius();
+		virtual float GetRadiusSmoothing();
+		virtual float GetRadiusParameter();
 
 		virtual void SetFont(TTF_Font* newfont);
 		virtual TTF_Font* GetFont();
@@ -98,6 +105,10 @@ namespace TailTipUI {
 		glm::vec4 draggmouse;
 		SDL_Keycode draggkey;
 		bool oldHoverstate;
+
+		glm::vec4 renderRadius;
+		float radiusSmoothing;
+		float radiusParameter;
 
 		ElementCallbackType HoverCallback;
 		ElementCallbackType LeftCallback;

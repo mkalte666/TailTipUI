@@ -10,6 +10,6 @@ namespace TailTipUI {
 	}
 
 	void Area::_Render() {
-		RenderSingleColor(bgcolor, RelativePositionToParent());
+		RenderSingleColor(bgcolor, RelativePositionToParent(), renderRadius, radiusParameter, radiusSmoothing);
 	}
 };
