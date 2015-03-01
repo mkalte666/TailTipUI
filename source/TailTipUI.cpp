@@ -80,6 +80,30 @@ namespace TailTipUI {
 		return name;
 	}
 
+	void GeneralElement::SetId(std::string newid) {
+		id = newid;
+	}
+
+	std::string GeneralElement::GetId() {
+		return id;
+	}
+
+	GeneralElement* GeneralElement::GetElementById(std::string searchId)
+	{
+		if (id == searchId) {
+			return this;
+		}
+
+		for (auto c : children) {
+			GeneralElement* e = c->GetElementById(searchId);
+			if (e != nullptr) {
+				return e;
+			}
+		}
+		return nullptr;
+
+	}
+
 	//Render also updates the callbaks, ...
 	void GeneralElement::Render()
 	{
@@ -89,7 +113,7 @@ namespace TailTipUI {
 		bool hoverstate = GetHover();
 		if (hoverstate && !oldHoverstate) {
 			if (HoverCallback)
-				HoverCallback(name);
+				HoverCallback(this);
 		}
 		oldHoverstate = hoverstate;
 
@@ -116,7 +140,7 @@ namespace TailTipUI {
 			}
 			if (draggmouse[2] == 0) {
 				if (LeftCallback)
-					LeftCallback(name);
+					LeftCallback(this);
 			}
 		}
 		else {
@@ -124,7 +148,7 @@ namespace TailTipUI {
 		}
 		if (GetRightclick() && draggmouse[3] == 0) {
 			if (RightCallback)
-				RightCallback(name);
+				RightCallback(this);
 		}
 		draggmouse = mouse;
 		draggkey = key;
@@ -236,11 +260,11 @@ namespace TailTipUI {
 		HoverCallback = c;
 	}
 
-	void GeneralElement::GetLeftclickCallback(ElementCallbackType c)
+	void GeneralElement::SetLeftclickCallback(ElementCallbackType c)
 	{
 		LeftCallback = c;
 	}
-	void GeneralElement::GetRightclickCallback(ElementCallbackType c)
+	void GeneralElement::SetRightclickCallback(ElementCallbackType c)
 	{
 		RightCallback = c;
 	}

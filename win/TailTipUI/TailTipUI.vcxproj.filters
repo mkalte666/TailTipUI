@@ -27,6 +27,9 @@
     <ClInclude Include="..\..\include\TailTipUI_button.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\TailTipUI_xml.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\TailTipUI.cpp">
@@ -36,6 +39,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\TailTipUI_area.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\TailTipUI_xml.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

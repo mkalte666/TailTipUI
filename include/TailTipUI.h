@@ -7,6 +7,9 @@
 #include <cmath>
 #include <algorithm>
 #include <list>
+#include <map>
+#include <sstream>
+#include <functional>
 //sdl-foo
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -16,8 +19,10 @@
 
 namespace TailTipUI {
 
+	class GeneralElement;
+
 	//Callbacks that will be called on events (hover, click, ...)
-	typedef  std::function<void(std::string)> ElementCallbackType;
+	typedef  std::function<void(GeneralElement*)> ElementCallbackType;
 	//callback set in root element that should deliver a mouse position and states of the left and right mousebutton.
 	typedef  std::function<glm::vec4()> MouseinfoCallbackType;
 	//callback set in root element that shold deliver the current keycodes
@@ -54,6 +59,9 @@ namespace TailTipUI {
 
 		virtual void SetName(std::string newname);
 		virtual std::string GetName();
+		virtual void SetId(std::string newid);
+		virtual std::string GetId();
+		GeneralElement* GetElementById(std::string searchid);
 
 		virtual glm::vec4 RelativePositionToParent();
 
@@ -75,9 +83,10 @@ namespace TailTipUI {
 		virtual bool GetHover();
 		virtual bool GetLeftclick();
 		virtual bool GetRightclick();
+
 		virtual void SetHoverCallback(ElementCallbackType c);
-		virtual void GetLeftclickCallback(ElementCallbackType c);
-		virtual void GetRightclickCallback(ElementCallbackType c);
+		virtual void SetLeftclickCallback(ElementCallbackType c);
+		virtual void SetRightclickCallback(ElementCallbackType c);
 
 		virtual glm::vec4 GetMouseInfo();
 		virtual SDL_Keycode GetCurrentButton();
@@ -91,6 +100,7 @@ namespace TailTipUI {
 		glm::vec4 pos;
 
 		std::string name;
+		std::string id;
 
 		glm::vec4 fgcolor;
 		glm::vec4 bgcolor;
