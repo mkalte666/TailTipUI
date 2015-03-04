@@ -112,8 +112,13 @@ namespace TailTipUI {
 		SDL_Keycode key = GetCurrentButton();
 		bool hoverstate = GetHover();
 		if (hoverstate && !oldHoverstate) {
-			if (HoverCallback)
+			if (HoverCallback) {
 				HoverCallback(this);
+			}
+			_InternalHoverEvent();
+		}
+		else if (!hoverstate && oldHoverstate) {
+			_InternalStopHoverEvent();
 		}
 		oldHoverstate = hoverstate;
 
@@ -139,16 +144,20 @@ namespace TailTipUI {
 				isDragged = !childBlock;
 			}
 			if (draggmouse[2] == 0) {
-				if (LeftCallback)
+				if (LeftCallback) {
 					LeftCallback(this);
+				}
+				_InternalLeftclickEvent();
 			}
 		}
 		else {
 			isDragged = false;
 		}
 		if (GetRightclick() && draggmouse[3] == 0) {
-			if (RightCallback)
+			if (RightCallback) {
 				RightCallback(this);
+			}
+			_InternalRightclickEvent();
 		}
 		draggmouse = mouse;
 		draggkey = key;
@@ -180,6 +189,11 @@ namespace TailTipUI {
 		bgcolor = color;
 	}
 
+	void GeneralElement::SetEventColor(glm::vec4 color)
+	{
+		eventColor = color;
+	}
+
 	glm::vec4 GeneralElement::GetForgroundColor()
 	{
 		return fgcolor;
@@ -188,6 +202,11 @@ namespace TailTipUI {
 	glm::vec4 GeneralElement::GetBackgroundColor()
 	{
 		return bgcolor;
+	}
+
+	glm::vec4 GeneralElement::GetEventColor()
+	{
+		return eventColor;
 	}
 
 	void GeneralElement::SetRadius(glm::vec4 r)
@@ -304,6 +323,15 @@ namespace TailTipUI {
 	{
 		return radiusParameter;
 	}
+
+	void GeneralElement::_InternalHoverEvent(){}
+	void GeneralElement::_InternalStopHoverEvent(){}
+	void GeneralElement::_InternalLeftclickEvent(){}
+	void GeneralElement::_InternalRightclickEvent(){}
+
+
+//Child element class functions
+
 
 	ChildElement::ChildElement()
 		: GeneralElement()

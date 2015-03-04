@@ -67,8 +67,10 @@ namespace TailTipUI {
 
 		virtual void SetForgroundColor(glm::vec4 color);
 		virtual void SetBackgroundColor(glm::vec4 color);
+		virtual void SetEventColor(glm::vec4 color);
 		virtual glm::vec4 GetForgroundColor();
 		virtual glm::vec4 GetBackgroundColor();
+		virtual glm::vec4 GetEventColor();
 
 		virtual void SetRadius(glm::vec4 r);
 		virtual void SetRadiusSmoothing(float s);
@@ -104,6 +106,7 @@ namespace TailTipUI {
 
 		glm::vec4 fgcolor;
 		glm::vec4 bgcolor;
+		glm::vec4 eventColor;
 
 		TTF_Font* font;
 
@@ -125,6 +128,12 @@ namespace TailTipUI {
 		ElementCallbackType RightCallback;
 
 		virtual void _Render();
+
+		virtual void _InternalHoverEvent();
+		virtual void _InternalStopHoverEvent();
+		virtual void _InternalLeftclickEvent();
+		virtual void _InternalRightclickEvent();
+
 	};
 
 	class ChildElement : public GeneralElement {

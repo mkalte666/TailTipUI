@@ -18,12 +18,15 @@ namespace TailTipUI {
 	ELEMENT_SETTING("font", SetFont, dstElement, strToFont, name, content) \
 	ELEMENT_SETTING("color", SetForgroundColor, dstElement, strToVec4, name, content) \
 	ELEMENT_SETTING("bgcolor", SetBackgroundColor, dstElement, strToVec4, name, content) \
+	ELEMENT_SETTING("eventcolor", SetEventColor, dstElement, strToVec4, name, content) \
 	ELEMENT_SETTING("hidden", SetHidden, dstElement, strToBool, name, content) \
 	ELEMENT_SETTING("draggable", SetDraggable, dstElement, strToBool, name, content) \
 	ELEMENT_SETTING("blockParentDragging", SetBlockParentdragging, dstElement, strToBool, name, content) \
 	ELEMENT_SETTING("radius", SetRadius, dstElement, strToVec4, name, content) \
 	ELEMENT_SETTING("radiusParameter", SetRadiusParameter, dstElement, strToFloat, name, content) \
 	ELEMENT_SETTING("radiusSmoothing", SetRadiusSmoothing, dstElement, strToFloat, name, content) \
+	SPECIAL_ELEMENT_SETTING("text", tagname, Text, "widthlock", SetWidthLock, dstElement, strToBool, name, content) \
+	SPECIAL_ELEMENT_SETTING("button", tagname, Button, "widthlock", SetTextWidthlock, dstElement, strToBool, name, content) \
 
 #define TAG_COMPARE(cmpname,name,classname,dstElement) else if(name==cmpname) { \
 	dstElement = new classname(); \
@@ -33,7 +36,8 @@ namespace TailTipUI {
 
 #define ELEMENT_SPECIFICATION(cpname, dstElement) \
 	TAG_COMPARE(cpname, "text",Text,dstElement) \
-	TAG_COMPARE(cpname, "area", Area, dstElement)
+	TAG_COMPARE(cpname, "area", Area, dstElement) \
+	TAG_COMPARE(cpname, "button", Button, dstElement)
 
 	TTF_Font* defaultFontLoader(std::string name, int size)
 	{
@@ -56,7 +60,7 @@ namespace TailTipUI {
 
 	TTF_Font* strToFont(std::string s)
 	{
-		static std::regex strRE("([\\w\\d\\\\\\/])\\s*:\\s*([\\d]*)");
+		static std::regex strRE("([\\w\\d.\\\\\\/]+)\\s*:\\s*([\\d]*)");
 		std::smatch m;
 		if (std::regex_search(s, m, strRE)) {
 			return XMLLoader::LoadFont(m[1], atoi(m[2].str().c_str()));

@@ -4,6 +4,7 @@
 #include <TailTipUI.h>
 #include <TailTipUI_text.h>
 #include <TailTipUI_area.h>
+#include <TailTipUI_button.h>
 
 namespace TailTipUI {
 

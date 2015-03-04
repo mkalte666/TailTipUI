@@ -149,6 +149,7 @@
       <FileType>Document</FileType>
     </ClCompile>
     <ClCompile Include="..\..\source\TailTipUI_area.cpp" />
+    <ClCompile Include="..\..\source\TailTipUI_button.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_text.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_xml.cpp" />
   </ItemGroup>

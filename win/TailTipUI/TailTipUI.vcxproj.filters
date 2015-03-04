@@ -44,5 +44,8 @@
     <ClCompile Include="..\..\source\TailTipUI_xml.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\TailTipUI_button.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
