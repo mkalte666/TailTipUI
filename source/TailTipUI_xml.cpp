@@ -162,10 +162,17 @@ namespace TailTipUI {
 	XMLLoader::XMLLoader(GLuint destinationFramebuffer, std::string infile, MouseinfoCallbackType mouseInfoCallback, ButtoninfoCallbackType buttonInfoCallback, FontLoaderFunctionType f)
 		: framebuffer(destinationFramebuffer), rootElelent(nullptr)
 	{
-		Load(infile, f, mouseInfoCallback, buttonInfoCallback);
+		Load(infile, mouseInfoCallback, buttonInfoCallback, f);
 	}
 
-	void XMLLoader::Load(std::string infile, FontLoaderFunctionType f, MouseinfoCallbackType mouseInfoCallback, ButtoninfoCallbackType buttonInfoCallback)
+	XMLLoader::~XMLLoader()
+	{
+		for (auto e : elements) {
+			delete e;
+		}
+		elements.clear();
+	}
+	void XMLLoader::Load(std::string infile, MouseinfoCallbackType mouseInfoCallback, ButtoninfoCallbackType buttonInfoCallback, FontLoaderFunctionType f)
 	{
 		fontLoader = f;
 		mouseCallback = mouseInfoCallback;
@@ -267,5 +274,19 @@ namespace TailTipUI {
 		rClickEvents[id] = e;
 	}
 
+	void XMLLoader::RegisterCallback(std::string name, ElementCallbackType c)
+	{
+		callbacks[name] = c;
+	}
+
+	void XMLLoader::RemoveCallback(std::string name)
+	{
+		for (auto i = callbacks.begin(); i != callbacks.end(); i++) {
+			if (i->first == name) {
+				callbacks.erase(i);
+				break;
+			}
+		}
+	}
 
 }; //namespace TailTipUI
