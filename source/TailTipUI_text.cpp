@@ -56,7 +56,7 @@ namespace TailTipUI {
 		if (font != nullptr && name != "" && tex != 0) {
 			glm::vec4 renderpos = RelativePositionToParent();
 			//renderpos[2] = renderpos[3] * textsizeratio;
-			RenderElementByTexture(tex, renderpos);
+			RenderElementByTexture(tex, RelativePositionToParent(), renderRadius, radiusParameter, smoothing);
 		}
 	}
 
@@ -69,7 +69,7 @@ namespace TailTipUI {
 		s = TTF_RenderText_Blended(font, name.c_str(), color);
 		
 		if (wlock) {
-			textsizeratio = (float)s->h / (float)s->w * 1.5; //we add some h multiplyer here since it causes problems otherwise ( to small texts)
+			textsizeratio = (float)s->h / (float)s->w * 1.5f; //we add some h multiplyer here since it causes problems otherwise ( to small texts)
 			pos[3] = pos[2] * textsizeratio;
 		}
 		else {

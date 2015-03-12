@@ -81,4 +81,23 @@ namespace TailTipUI {
 	{
 		return widthlockText;
 	}
+
+	void Button::_InternalHoverEvent()
+	{
+		if (usesEventColor) {
+			glm::vec4 tmpColor = bgcolor;
+			bgcolor = eventColor;
+			eventColor = bgcolor;
+		}
+	}
+
+	void Button::_InternalStopHoverEvent()
+	{
+		if (usesEventColor) {
+			glm::vec4 tmpColor = bgcolor;
+			bgcolor = eventColor;
+			eventColor = bgcolor;
+		}
+
+	}
 }; //namespace TailTipUI

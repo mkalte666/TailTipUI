@@ -24,9 +24,11 @@ namespace TailTipUI {
 	ELEMENT_SETTING("blockParentDragging", SetBlockParentdragging, dstElement, strToBool, name, content) \
 	ELEMENT_SETTING("radius", SetRadius, dstElement, strToVec4, name, content) \
 	ELEMENT_SETTING("radiusParameter", SetRadiusParameter, dstElement, strToFloat, name, content) \
-	ELEMENT_SETTING("radiusSmoothing", SetRadiusSmoothing, dstElement, strToFloat, name, content) \
+	ELEMENT_SETTING("smoothing", SetSmoothing, dstElement, strToFloat, name, content) \
 	SPECIAL_ELEMENT_SETTING("text", tagname, Text, "widthlock", SetWidthLock, dstElement, strToBool, name, content) \
 	SPECIAL_ELEMENT_SETTING("button", tagname, Button, "widthlock", SetTextWidthlock, dstElement, strToBool, name, content) \
+	SPECIAL_ELEMENT_SETTING("button", tagname, Button, "hovercolor", SetEventColor, dstElement, strToVec4, name, content) \
+	SPECIAL_ELEMENT_SETTING("image", tagname, Image, "texturename", SetImage, dstElement, strToImage, name, content)
 
 #define TAG_COMPARE(cmpname,name,classname,dstElement) else if(name==cmpname) { \
 	dstElement = new classname(); \
@@ -37,16 +39,8 @@ namespace TailTipUI {
 #define ELEMENT_SPECIFICATION(cpname, dstElement) \
 	TAG_COMPARE(cpname, "text",Text,dstElement) \
 	TAG_COMPARE(cpname, "area", Area, dstElement) \
-	TAG_COMPARE(cpname, "button", Button, dstElement)
-
-	TTF_Font* defaultFontLoader(std::string name, int size)
-	{
-		TTF_Font *newfont = TTF_OpenFont(name.c_str(), size);
-		if (newfont == NULL) {
-			return nullptr;
-		}
-		return newfont;
-	}
+	TAG_COMPARE(cpname, "button", Button, dstElement) \
+	TAG_COMPARE(cpname, "image", Image, dstElement)
 
 	glm::vec4 strToVec4(std::string s)
 	{
@@ -63,7 +57,7 @@ namespace TailTipUI {
 		static std::regex strRE("([\\w\\d.\\\\\\/]+)\\s*:\\s*([\\d]*)");
 		std::smatch m;
 		if (std::regex_search(s, m, strRE)) {
-			return XMLLoader::LoadFont(m[1], atoi(m[2].str().c_str()));
+			return Info::GetFont(m[1], atoi(m[2].str().c_str()));
 		}
 		return nullptr;
 	}
@@ -88,9 +82,11 @@ namespace TailTipUI {
 		return false;
 	}
 
-	FontLoaderFunctionType XMLLoader::fontLoader = FontLoaderFunctionType();
-	MouseinfoCallbackType XMLLoader::mouseCallback = MouseinfoCallbackType();
-	ButtoninfoCallbackType XMLLoader::buttonCallback = ButtoninfoCallbackType();
+	GLuint strToImage(std::string s)
+	{
+		return Info::GetImage(s);
+	}
+
 
 	//this is NOT a memeber fuction because i want XMLLoader completly out of the headers.
 	GeneralElement* LoadTagIntoElement(XMLLoader* currentLoader, HoardXML::Tag t, GLuint rootFramebuffer = 0)
@@ -101,8 +97,6 @@ namespace TailTipUI {
 		std::map<std::string, std::string> tagAttributes = t.GetAttributes();
 		if (tagName == "root") {
 			newElement = new Root(rootFramebuffer);
-			dynamic_cast<Root*>(newElement)->SetMouseCallback(XMLLoader::MouseCallback);
-			dynamic_cast<Root*>(newElement)->SetButtonCallback(XMLLoader::ButtonCallback);
 		}
 		ELEMENT_SPECIFICATION(tagName, newElement);
 
@@ -159,10 +153,10 @@ namespace TailTipUI {
 
 	}
 
-	XMLLoader::XMLLoader(GLuint destinationFramebuffer, std::string infile, MouseinfoCallbackType mouseInfoCallback, ButtoninfoCallbackType buttonInfoCallback, FontLoaderFunctionType f)
+	XMLLoader::XMLLoader(GLuint destinationFramebuffer, std::string infile)
 		: framebuffer(destinationFramebuffer), rootElelent(nullptr)
 	{
-		Load(infile, mouseInfoCallback, buttonInfoCallback, f);
+		Load(infile);
 	}
 
 	XMLLoader::~XMLLoader()
@@ -172,11 +166,8 @@ namespace TailTipUI {
 		}
 		elements.clear();
 	}
-	void XMLLoader::Load(std::string infile, MouseinfoCallbackType mouseInfoCallback, ButtoninfoCallbackType buttonInfoCallback, FontLoaderFunctionType f)
+	void XMLLoader::Load(std::string infile)
 	{
-		fontLoader = f;
-		mouseCallback = mouseInfoCallback;
-		buttonCallback = buttonInfoCallback;
 		HoardXML::Document indoc(infile);
 		std::vector<HoardXML::Tag> tags = indoc.GetChildren();
 
@@ -204,29 +195,6 @@ namespace TailTipUI {
 		for (auto e : elements) {
 			e->Render();
 		}
-	}
-
-	TTF_Font* XMLLoader::LoadFont(std::string name, int size) {
-		if (fontLoader) {
-			return fontLoader(name, size);
-		}
-		return nullptr;
-	}
-
-	glm::vec4 XMLLoader::MouseCallback()
-	{
-		if (mouseCallback) {
-			return mouseCallback();
-		}
-		return glm::vec4();
-	}
-
-	SDL_Keycode XMLLoader::ButtonCallback()
-	{
-		if (buttonCallback) {
-			return buttonCallback();
-		}
-		return NULL;
 	}
 
 	void XMLLoader::_HandleGeneralCallback(GeneralElement* caller, std::string callbackString)

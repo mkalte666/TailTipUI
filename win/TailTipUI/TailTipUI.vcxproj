@@ -141,6 +141,7 @@
     <ClInclude Include="..\..\include\TailTipUI.h" />
     <ClInclude Include="..\..\include\TailTipUI_area.h" />
     <ClInclude Include="..\..\include\TailTipUI_button.h" />
+    <ClInclude Include="..\..\include\TailTipUI_image.h" />
     <ClInclude Include="..\..\include\TailTipUI_text.h" />
     <ClInclude Include="..\..\include\TailTipUI_xml.h" />
   </ItemGroup>
@@ -150,6 +151,7 @@
     </ClCompile>
     <ClCompile Include="..\..\source\TailTipUI_area.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_button.cpp" />
+    <ClCompile Include="..\..\source\TailTipUI_image.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_text.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_xml.cpp" />
   </ItemGroup>

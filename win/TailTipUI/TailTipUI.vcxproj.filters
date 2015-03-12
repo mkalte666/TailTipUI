@@ -30,6 +30,9 @@
     <ClInclude Include="..\..\include\TailTipUI_xml.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\TailTipUI_image.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\source\TailTipUI.cpp">
@@ -45,6 +48,9 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\TailTipUI_button.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\TailTipUI_image.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>

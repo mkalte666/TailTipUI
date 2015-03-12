@@ -2,19 +2,142 @@
 
 namespace TailTipUI {
 
-	GeneralElement::GeneralElement()
+	int Info::width = 0;
+	int Info::height = 0;
+	std::string Info::name = std::string("none");
+	MouseinfoCallbackType Info::mousecallback = MouseinfoCallbackType();
+	ButtoninfoCallbackType Info::buttoncallback = ButtoninfoCallbackType();
+	FontLoaderFunctionType Info::fontCallback = defaultFontLoader;
+	ImageLoaderFunctionType Info::imageCallback = ImageLoaderFunctionType();
+
+	Info::Info(std::string windowname, int w, int h)
 	{
-		pos = glm::vec4(0);
-		hidden = false;
-		parent = nullptr;
-		font = nullptr;
-		draggable = false;
-		blockParentdragging = true;
-		oldHoverstate = false;
-		isDragged = false;
-		renderRadius = glm::vec4(0);
-		radiusSmoothing = 0.05f;
-		radiusParameter = 0.1f;
+		name = windowname;
+		width = w;
+		height = h;
+	}
+	Info::~Info()
+	{
+	}
+
+	glm::vec4 Info::GetMouseInfo()
+	{
+		if (mousecallback)
+			return mousecallback();
+		return glm::vec4(0);
+	}
+
+	SDL_Keycode Info::GetCurrentButton()
+	{
+		if (buttoncallback)
+			return buttoncallback();
+		return NULL;
+	}
+
+	TTF_Font* Info::GetFont(std::string name, int size)
+	{
+		if (fontCallback) {
+			return fontCallback(name, size);
+		}
+		return nullptr;
+	}
+
+	GLuint Info::GetImage(std::string name)
+	{
+		if (imageCallback) {
+			return imageCallback(name);
+		}
+		return NULL;
+	}
+
+	void Info::SetMouseCallback(MouseinfoCallbackType c)
+	{
+		mousecallback = c;
+	}
+
+	void Info::SetButtonCallback(ButtoninfoCallbackType c)
+	{
+		buttoncallback = c;
+	}
+
+	void Info::SetFontCallback(FontLoaderFunctionType c)
+	{
+		fontCallback = c;
+	}
+
+	void Info::SetImageCallback(ImageLoaderFunctionType c)
+	{
+		imageCallback = c;
+	}
+
+	TTF_Font* defaultFontLoader(std::string name, int size)
+	{
+		TTF_Font *newfont = TTF_OpenFont(name.c_str(), size);
+		if (newfont == NULL) {
+			return nullptr;
+		}
+		return newfont;
+	}
+
+
+	StandaloneSetup::StandaloneSetup(std::string name, int width, int height, int x, int y, Uint32 flags, int mayor, int minor, int depth)
+		: name(name), valid(false), window(nullptr)
+	{
+		if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+			return;
+		}
+
+		if (mayor < 3 || mayor == 3 && minor < 3 || depth != 16 && depth != 24 && depth != 32 || width == 0 || height == 0) {
+			return;
+		}
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, mayor);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
+
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, depth);
+
+		window = SDL_CreateWindow(name.c_str(), x, y, width, height, flags);
+		if (!window) {
+			return;
+		}
+		valid = true;
+		Info::Info(name, width, height);
+	}
+
+	StandaloneSetup::~StandaloneSetup()
+	{
+		if (window) {
+			SDL_DestroyWindow(window);
+		}
+		SDL_Quit();
+	}
+
+	bool& StandaloneSetup::IsValid() 
+	{
+		return valid;
+	}
+
+	void StandaloneSetup::Update()
+	{
+		if (!valid) return;
+
+		SDL_Event e;
+		while (SDL_PollEvent(&e)) {
+			if (e.type == SDL_QUIT) {
+				valid = false;
+			}
+		}
+
+		SDL_GL_SwapWindow(window);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	GeneralElement::GeneralElement()
+		: pos(0), hidden(false), parent(nullptr), font(nullptr), draggable(nullptr), blockParentdragging(nullptr),
+		oldHoverstate(false), isDragged(false), renderRadius(0), smoothing(0.00f), radiusParameter(0.1f),
+		fgcolor(0), bgcolor(0), eventColor(0), usesEventColor(false)
+	{
+
 	}
 
 	GeneralElement::~GeneralElement()
@@ -108,8 +231,8 @@ namespace TailTipUI {
 	void GeneralElement::Render()
 	{
 		if (hidden) return;
-		glm::vec4 mouse = GetMouseInfo();
-		SDL_Keycode key = GetCurrentButton();
+		glm::vec4 mouse = Info::GetMouseInfo();
+		SDL_Keycode key = Info::GetCurrentButton();
 		bool hoverstate = GetHover();
 		if (hoverstate && !oldHoverstate) {
 			if (HoverCallback) {
@@ -192,6 +315,7 @@ namespace TailTipUI {
 	void GeneralElement::SetEventColor(glm::vec4 color)
 	{
 		eventColor = color;
+		usesEventColor = true;
 	}
 
 	glm::vec4 GeneralElement::GetForgroundColor()
@@ -258,19 +382,19 @@ namespace TailTipUI {
 	bool GeneralElement::GetHover()
 	{
 		glm::vec4 relativePos = RelativePositionToParent();
-		glm::vec4 mpos = GetMouseInfo();
+		glm::vec4 mpos = Info::GetMouseInfo();
 		return (mpos.x >= relativePos.x && mpos.y >= relativePos.y && mpos.x <= (relativePos.x + relativePos[2]) && mpos.y <= (relativePos.y + relativePos[3]));
 	}
 
 	bool GeneralElement::GetLeftclick()
 	{
-		glm::vec4 mpos = GetMouseInfo();
+		glm::vec4 mpos = Info::GetMouseInfo();
 		return (GetHover() && mpos[2] != 0.0);
 	}
 
 	bool GeneralElement::GetRightclick()
 	{
-		glm::vec4 mpos = GetMouseInfo();
+		glm::vec4 mpos = Info::GetMouseInfo();
 		return (GetHover() && mpos[3] != 0.0);
 	}
 
@@ -288,30 +412,14 @@ namespace TailTipUI {
 		RightCallback = c;
 	}
 
-	glm::vec4 GeneralElement::GetMouseInfo()
+	void GeneralElement::SetSmoothing(float s) 
 	{
-		if (parent == nullptr) {
-			return glm::vec4(0);
-		}
-		return parent->GetMouseInfo();
+		smoothing = s;
 	}
 
-	SDL_Keycode GeneralElement::GetCurrentButton()
+	float GeneralElement::GetSmoothing()
 	{
-		if (parent == nullptr) {
-			return NULL;
-		}
-		return parent->GetCurrentButton();
-	}
-
-	void GeneralElement::SetRadiusSmoothing(float s) 
-	{
-		radiusSmoothing = s;
-	}
-
-	float GeneralElement::GetRadiusSmoothing()
-	{
-		return radiusSmoothing;
+		return smoothing;
 	}
 
 	void GeneralElement::SetRadiusParameter(float b) 
@@ -376,30 +484,6 @@ namespace TailTipUI {
 		glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
 	}
 
-	glm::vec4 Root::GetMouseInfo()
-	{
-		if (mousecallback)
-			return mousecallback();
-		return glm::vec4(0);
-	}
-
-	SDL_Keycode Root::GetCurrentButton()
-	{
-		if (buttoncallback)
-			return buttoncallback();
-		return NULL;
-	}
-
-	void Root::SetMouseCallback(MouseinfoCallbackType c)
-	{
-		mousecallback = c;
-	}
-
-	void Root::SetButtonCallback(ButtoninfoCallbackType c)
-	{
-		buttoncallback = c;
-	}
-
 	//below the blody opengl foo and texture management and stuff
 	const char* vertexShader =
 		"#version 330 core\n"
@@ -426,25 +510,28 @@ namespace TailTipUI {
 		"uniform float s;"
 		"void main(){"
 		"   vec2 P;"
-		"   float colorFactor=1.0f;"
+		"	float colorFactor=1.0f;"
+		"	if(s!=0.0f) {"
+		"		colorFactor=smoothstep(0.0f,s,UV.x)*smoothstep(0.0f,s,UV.y)*(1.0f-smoothstep(1.0f-s,1.0f,UV.x))*(1.0f-smoothstep(1.0f-s,1.0f,UV.y));"
+		"	}"
 		"	if (UV.x<=b) {"
 		"		P.x=b;"
 		"		if(UV.y<=b) {"
 		"			P.y=b;"
-		"			colorFactor =  1.0f-smoothstep(r[0],r[0]*s,length(UV-P));"
+		"			colorFactor *=  1.0f-smoothstep(r[0],r[0]+s,length(UV-P));"
 		"		} else if(UV.y>=(1-b)) {"
 		"			P.y=1-b;"
-		"			colorFactor = 1.0f-smoothstep(r[3],r[3]*s,length(UV-P));"
+		"			colorFactor *= 1.0f-smoothstep(r[3],r[3]+s,length(UV-P));"
 		"		}"
 		"	}"
 		"	else if (UV.x>=(1-b)) {"
 		"		P.x=1-b;"
 		"		if(UV.y<=b) {"
 		"			P.y=b;"
-		"			colorFactor =  1.0f-smoothstep(r[1],r[1]*s,length(UV-P));"
+		"			colorFactor *=  1.0f-smoothstep(r[1],r[1]+s,length(UV-P));"
 		"		} else if(UV.y>=(1-b)) {"
 		"			P.y=1-b;"
-		"			colorFactor =  1.0f-smoothstep(r[2],r[2]*s,length(UV-P));"
+		"			colorFactor *=  1.0f-smoothstep(r[2],r[2]+s,length(UV-P));"
 		"		}"
 		"	}"
 		"	color = texture2D(TextureSampler, UV).rgba*colorFactor;"
@@ -459,27 +546,31 @@ namespace TailTipUI {
 		"uniform vec4 r;"
 		"uniform float b;"
 		"uniform float s;"
+		"uniform sampler2D lastImage;"
 		"void main(){"
 		"   vec2 P;"
-		"   float colorFactor=1.0f;"
+		"	float colorFactor=1.0f;"
+		"	if(s!=0.0f) {"
+		"		colorFactor=smoothstep(0.0f,s,UV.x)*smoothstep(0.0f,s,UV.y)*(1.0f-smoothstep(1.0f-s,1.0f,UV.x))*(1.0f-smoothstep(1.0f-s,1.0f,UV.y));"
+		"	}"
 		"	if (UV.x<=b) {"
 		"		P.x=b;"
 		"		if(UV.y<=b) {"
 		"			P.y=b;"
-		"			colorFactor =  1.0f-smoothstep(r[0],r[0]*s,length(UV-P));"
+		"			colorFactor *=  1.0f-smoothstep(r[0],r[0]+s,length(UV-P));"
 		"		} else if(UV.y>=(1-b)) {"
 		"			P.y=1-b;"
-		"			colorFactor = 1.0f-smoothstep(r[3],r[3]*s,length(UV-P));"
+		"			colorFactor *= 1.0f-smoothstep(r[3],r[3]+s,length(UV-P));"
 		"		}"
 		"	}"
 		"	else if (UV.x>=(1-b)) {"
 		"		P.x=1-b;"
 		"		if(UV.y<=b) {"
 		"			P.y=b;"
-		"			colorFactor =  1.0f-smoothstep(r[1],r[1]*s,length(UV-P));"
+		"			colorFactor *=  1.0f-smoothstep(r[1],r[1]+s,length(UV-P));"
 		"		} else if(UV.y>=(1-b)) {"
 		"			P.y=1-b;"
-		"			colorFactor =  1.0f-smoothstep(r[2],r[2]*s,length(UV-P));"
+		"			colorFactor *=  1.0f-smoothstep(r[2],r[2]+s,length(UV-P));"
 		"		}"
 		"	}"
 		"	color = incolor*colorFactor;"
@@ -516,7 +607,7 @@ namespace TailTipUI {
 			}
 		}
 
-		GLuint TextureId = 0;
+		GLuint TextureId = GL_INVALID_VALUE;
 		glGenTextures(1, &TextureId);
 		glBindTexture(GL_TEXTURE_2D, TextureId);
 
@@ -579,6 +670,7 @@ namespace TailTipUI {
 
 	void RenderElementByTexture(GLuint tex, glm::vec4 pos, glm::vec4 radiusKomponent, float b, float s) {
 		static GLuint programId = 0;
+	//	static GLuint lastRenderTex = 0;
 		static GLuint posPos = 0;
 		static GLuint texPos = 0;
 		static GLuint rPos = 0;
@@ -586,6 +678,7 @@ namespace TailTipUI {
 		static GLuint sPos = 0;
 		static GLuint quad = 0;
 		if (programId == 0) {
+			//glGenTextures(1, &lastRenderTex);
 			programId = _LoadProgram(vertexShader, fragmentShaderTexture);
 			posPos = glGetUniformLocation(programId, "position");
 			texPos = glGetUniformLocation(programId, "TextureSampler");
@@ -607,7 +700,7 @@ namespace TailTipUI {
 		float rFactor = sqrt(2 * b*b);
 		glUniform4f(rPos, sqrt(2 * b*b) - radiusKomponent[0], sqrt(2 * b*b) - radiusKomponent[1], sqrt(2 * b*b) - radiusKomponent[2], sqrt(2 * b*b) - radiusKomponent[3]);
 		glUniform1f(bPos, b);
-		glUniform1f(sPos, 1.0f + s);
+		glUniform1f(sPos, s);
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, quad);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
@@ -618,6 +711,7 @@ namespace TailTipUI {
 	void RenderSingleColor(glm::vec4 color, glm::vec4 pos, glm::vec4 radiusKomponent, float b, float s)
 	{
 		static GLuint programId = 0;
+		//static GLuint lastRenderTex = 0;
 		static GLuint posPos = 0;
 		static GLuint colorPos = 0;
 		static GLuint rPos = 0;
@@ -625,6 +719,7 @@ namespace TailTipUI {
 		static GLuint sPos = 0;
 		static GLuint quad = 0;
 		if (programId == 0) {
+		//	glGenTextures(1, &lastRenderTex);
 			programId = _LoadProgram(vertexShader, fragmentShaderSingleColor);
 			posPos = glGetUniformLocation(programId, "position");
 			colorPos = glGetUniformLocation(programId, "incolor");
@@ -635,13 +730,19 @@ namespace TailTipUI {
 			glBindBuffer(GL_ARRAY_BUFFER, quad);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad), g_quad, GL_STATIC_DRAW);
 		}
+
+		//for future use
+		//glReadBuffer(GL_FRONT);
+		//glBindTexture(GL_TEXTURE_2D, lastRenderTex);
+		//glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, Info::width, Info::height, 0);
+
 		glUseProgram(programId);
 		glUniform4f(posPos, pos[0], pos[1], pos[2], pos[3]);
 		glUniform4f(colorPos, color[0], color[1], color[2], color[3]);
 		float rFactor = sqrt(2 * b*b);
 		glUniform4f(rPos, sqrt(2 * b*b) - radiusKomponent[0], sqrt(2 * b*b) - radiusKomponent[1], sqrt(2 * b*b) - radiusKomponent[2], sqrt(2 * b*b) - radiusKomponent[3]);
 		glUniform1f(bPos, b);
-		glUniform1f(sPos, 1.0f+s);
+		glUniform1f(sPos, s);
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, quad);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);

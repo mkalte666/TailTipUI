@@ -5,11 +5,9 @@
 #include <TailTipUI_text.h>
 #include <TailTipUI_area.h>
 #include <TailTipUI_button.h>
+#include <TailTipUI_image.h>
 
 namespace TailTipUI {
-
-	typedef std::function<TTF_Font*(std::string, int)> FontLoaderFunctionType;
-	TTF_Font* defaultFontLoader(std::string name, int size);
 
 	//class XMLLoader
 	//info: Loads an xml-file and creates a Tree-structure.
@@ -17,10 +15,10 @@ namespace TailTipUI {
 	{
 	public:
 		XMLLoader(GLuint destinationFramebuffer);
-		XMLLoader(GLuint destinationFramebuffer, std::string infile, MouseinfoCallbackType mouseInfoCallback = MouseinfoCallbackType(), ButtoninfoCallbackType buttonInfoCallback = ButtoninfoCallbackType(), FontLoaderFunctionType f = defaultFontLoader);
+		XMLLoader(GLuint destinationFramebuffer, std::string infile);
 		~XMLLoader();
 
-		void Load(std::string infile, MouseinfoCallbackType mouseInfoCallback = MouseinfoCallbackType(), ButtoninfoCallbackType buttonInfoCallback = ButtoninfoCallbackType(), FontLoaderFunctionType f = defaultFontLoader);
+		void Load(std::string infile);
 	
 		void RegisterCallback(std::string name, ElementCallbackType c);
 		void RemoveCallback(std::string name);
@@ -37,14 +35,7 @@ namespace TailTipUI {
 
 		GeneralElement* GetElementById(std::string id);
 		
-		static TTF_Font* LoadFont(std::string name, int size);
-		static glm::vec4 MouseCallback();
-		static SDL_Keycode ButtonCallback();
 	private:
-		static FontLoaderFunctionType fontLoader;
-		static MouseinfoCallbackType mouseCallback;
-		static ButtoninfoCallbackType buttonCallback;
-
 		GLuint framebuffer;
 		Root* rootElelent;
 
