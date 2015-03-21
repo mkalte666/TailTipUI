@@ -4,9 +4,10 @@ namespace TailTipUI {
 
 	Button::Button()
 	{
-		widthlockText = true;
+		widthlockText = false;
 		buttonText = new Text();
 		buttonText->SetWidthLock(widthlockText);
+		buttonText->SetPos(glm::vec4(.0f, .0f, 1.f, 1.f));
 		AttatchChild(buttonText);
 	}
 
@@ -22,13 +23,25 @@ namespace TailTipUI {
 	{
 		//we MUST NOT nelete buttonText since thats handled by the child-element system
 	}
+
+	void Button::_UpdateText()
+	{
+		buttonText->ForceUpdate();
+		glm::vec4 textpos = buttonText->GetPos();
+		glm::vec4 textposScaled = buttonText->RelativePositionToParent();
+		glm::vec4 ownposScaled = RelativePositionToParent();
+		float w = (textposScaled[2]) / ownposScaled[2];
+		float h = (textposScaled[3]) / ownposScaled[3];
+		buttonText->SetPos(glm::vec4(0.f, 0.f, textpos[2], textpos[3]));
+	}
+
 	void Button::SetFont(TTF_Font* newfont) 
 	{
 		Area::SetFont(newfont);
 		if (buttonText != nullptr) {
 			buttonText->SetFont(newfont);
 			glm::vec4 textpos = buttonText->GetPos();
-			buttonText->SetPos(glm::vec4(0.5 - textpos[2] / 2.0f, 0.5 - textpos[3] / 2.0f, textpos[2], textpos[3]));
+			buttonText->SetPos(glm::vec4(0.5 - textpos[2] / 2.0f, 0.1, textpos[2], textpos[3]));
 		}
 		
 	}
@@ -38,8 +51,7 @@ namespace TailTipUI {
 		Area::SetName(newname);
 		if (buttonText != nullptr) {
 			buttonText->SetName(newname);
-			glm::vec4 textpos = buttonText->GetPos();
-			buttonText->SetPos(glm::vec4(0.5 - textpos[2] / 2.0f, 0.5 - textpos[3] / 2.0f, textpos[2], textpos[3]));
+			_UpdateText();
 		}
 	}
 
@@ -57,10 +69,7 @@ namespace TailTipUI {
 		Area::SetPos(newpos);
 
 		if (buttonText != nullptr) {
-			buttonText->SetPos(glm::vec4(0,0,.9f, .9f));
-			buttonText->ForceUpdate();
-			glm::vec4 tPos = buttonText->GetPos();
-			buttonText->SetPos(glm::vec4(.5f - tPos[2] / 2.f, .5f - tPos[3] / 2.f, tPos[2], tPos[3]));
+			_UpdateText();
 		}
 	}
 

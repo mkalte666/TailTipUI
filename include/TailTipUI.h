@@ -26,11 +26,17 @@ namespace TailTipUI {
 	//callback set in root element that should deliver a mouse position and states of the left and right mousebutton.
 	typedef  std::function<glm::vec4()> MouseinfoCallbackType;
 	//callback set in root element that shold deliver the current keycodes
-	typedef  std::function<SDL_Keycode()> ButtoninfoCallbackType;
+	typedef  std::function<const Uint8*()> ButtoninfoCallbackType;
 	//callback set for font-loading
 	typedef std::function<TTF_Font*(std::string, int)> FontLoaderFunctionType;
 	//callback set for image-loading
 	typedef std::function<GLuint(std::string)> ImageLoaderFunctionType;
+	//cakkback set for resetting input buffer
+	typedef std::function<void(void)> TextBufferResetFunctionType;
+	//callback set for getting input buffer
+	typedef std::function<std::string(void)> GetTextBufferFunctionType;
+
+	//default font loader
 	TTF_Font* defaultFontLoader(std::string name, int size);
 
 
@@ -53,6 +59,13 @@ namespace TailTipUI {
 	//			b: radius-parameter. Again, look in the explanations of the radius-rendering
 	//			s: smoothing. Paramenter for smooth-step.
 	void RenderSingleColor(glm::vec4 color, glm::vec4 pos, glm::vec4 radiusKomponent = glm::vec4(0), float b = 0.1f, float s = 0.05f);
+	//function: RenderLineColored
+	//note: Renders a line on the screen with color "color"
+	//param:	color: the RGBA-color of the line
+	//			pos: position of the line, with [0] and [1] being the beginning and [2] and[3] the end points of the line
+	//			s: smoothing of the line
+	//			w: thickness of the line
+	void RenderLineColored(glm::vec4 color, glm::vec4 pos, float w, float s);
 
 	//class: Info
 	//note: Holds infos needed for rendering
@@ -81,13 +94,15 @@ namespace TailTipUI {
 		//param:	c: the function to call
 		static void SetImageCallback(ImageLoaderFunctionType c);
 
+		static void SetTextBufferResetCallback(TextBufferResetFunctionType c);
+		static void SetGetTextBufferCallback(GetTextBufferFunctionType c);
 
 		//function: GetMouseInfo
 		//note: Used to get the mouseposition. 
 		static glm::vec4 GetMouseInfo();
 		//function: GetCurrentButton
 		//note: Used to get the buttonstate.
-		static SDL_Keycode GetCurrentButton();
+		static const Uint8* GetCurrentButton();
 		//function: GetFont
 		//note: returns a font wiht <name> at size <sizeA>
 		//param:	name: name of the font to load
@@ -97,6 +112,9 @@ namespace TailTipUI {
 		//note: Loads a image with name "name"
 		//param:	name: image to load
 		static GLuint GetImage(std::string name);
+
+		static void ResetTextBuffer();
+		static std::string GetTextBuffer();
 
 		//var: width. width of the render-window
 		static int width;
@@ -112,6 +130,10 @@ namespace TailTipUI {
 		static FontLoaderFunctionType fontCallback;
 		//var: imageCallback. callback wich provides an imgae from a name
 		static ImageLoaderFunctionType imageCallback;
+		//var: textBufferResetCallback. callback wich provides the reset function for the text buffer
+		static TextBufferResetFunctionType textBufferResetCallback;
+		//var: getTextBufferCallback. 
+		static GetTextBufferFunctionType getTextBufferCallback;
 	};
 
 	//class: StandaloneSetup
@@ -319,6 +341,10 @@ namespace TailTipUI {
 		//note: Sets the callback wich is called on a rightclick event
 		//param:	c: the function to call
 		virtual void SetRightclickCallback(ElementCallbackType c);
+		//function: SetSpecialCallback
+		//note: Sets the callback for an additional event
+		//param:	c: the function to call
+		virtual void SetSpecialCallback(ElementCallbackType c);
 
 	private:
 
@@ -361,9 +387,12 @@ namespace TailTipUI {
 		//var: draggmouse. last mousestade dragged into the current
 		glm::vec4 draggmouse;
 		//var: draggkey. the last key-state
-		SDL_Keycode draggkey;
+		Uint8* draggkey;
 		//var: oldHoverstate. the last hoverstate
 		bool oldHoverstate;
+		
+		//var: inFocus. true if the element is in focus
+		bool inFocus;
 
 		//var: smoothing. smoothing paramenter
 		float smoothing;
@@ -379,7 +408,8 @@ namespace TailTipUI {
 		ElementCallbackType LeftCallback;
 		//var: RightCallback. Function called on rightclicks
 		ElementCallbackType RightCallback;
-
+		//var: specialCallback. Function called on special events
+		ElementCallbackType specialCallback;
 		//function: _Render()
 		//note: Internal render function for each element. Her drawing should take place
 		virtual void _Render();
@@ -396,6 +426,10 @@ namespace TailTipUI {
 		//function: _InternalRightclickEvent
 		//note: Element-internal function called on rightclick events
 		virtual void _InternalRightclickEvent();
+
+
+		virtual void _Focus();
+		virtual void _LostFocus();
 
 	};
 

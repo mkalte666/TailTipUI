@@ -40,7 +40,8 @@ namespace TailTipUI {
 	TAG_COMPARE(cpname, "text",Text,dstElement) \
 	TAG_COMPARE(cpname, "area", Area, dstElement) \
 	TAG_COMPARE(cpname, "button", Button, dstElement) \
-	TAG_COMPARE(cpname, "image", Image, dstElement)
+	TAG_COMPARE(cpname, "image", Image, dstElement) \
+	TAG_COMPARE(cpname, "input", Input, dstElement)
 
 	glm::vec4 strToVec4(std::string s)
 	{
@@ -135,6 +136,10 @@ namespace TailTipUI {
 				newElement->SetRightclickCallback(std::bind(&XMLLoader::RightclickCallbackEventHandler, currentLoader, std::placeholders::_1));
 				newElement->SetLeftclickCallback(std::bind(&XMLLoader::LeftclickCallbackEventHandler, currentLoader, std::placeholders::_1));
 			}
+			else if (attributeIterator->first == "onspecial") {
+				currentLoader->AddSpecialEvent(newElement->GetId(), attributeIterator->second);
+				newElement->SetSpecialCallback(std::bind(&XMLLoader::SpecialEventCallbackEventHandler, currentLoader, std::placeholders::_1));
+			}
 		}
 		
 		std::vector<HoardXML::Tag> childtags = t.GetChildren();
@@ -204,7 +209,7 @@ namespace TailTipUI {
 		if (std::regex_search(callbackString, m, callbackRE)) {
 			if (m[1] == "callback") {
 				if (callbacks[m[2]]) {
-					callbacks[m[2]](caller);
+					callbacks[m[2]](caller, this);
 				}
 				return;
 			}
@@ -229,6 +234,11 @@ namespace TailTipUI {
 	{
 		_HandleGeneralCallback(elem, rClickEvents[elem->GetId()]);
 	}
+	void XMLLoader::SpecialEventCallbackEventHandler(GeneralElement* elem)
+	{
+		_HandleGeneralCallback(elem, specialEvents[elem->GetId()]);
+	}
+
 	void XMLLoader::AddHoverEvent(std::string id, std::string e)
 	{
 		hoverEvents[id] = e;
@@ -241,8 +251,12 @@ namespace TailTipUI {
 	{
 		rClickEvents[id] = e;
 	}
+	void XMLLoader::AddSpecialEvent(std::string id, std::string e)
+	{
+		specialEvents[id] = e;
+	}
 
-	void XMLLoader::RegisterCallback(std::string name, ElementCallbackType c)
+	void XMLLoader::RegisterCallback(std::string name, XMLLoaderEventCallback c)
 	{
 		callbacks[name] = c;
 	}

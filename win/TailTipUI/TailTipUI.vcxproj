@@ -94,6 +94,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -104,6 +105,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -116,6 +118,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -130,6 +133,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_ITERATOR_DEBUG_LEVEL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -142,6 +146,7 @@
     <ClInclude Include="..\..\include\TailTipUI_area.h" />
     <ClInclude Include="..\..\include\TailTipUI_button.h" />
     <ClInclude Include="..\..\include\TailTipUI_image.h" />
+    <ClInclude Include="..\..\include\TailTipUI_input.h" />
     <ClInclude Include="..\..\include\TailTipUI_text.h" />
     <ClInclude Include="..\..\include\TailTipUI_xml.h" />
   </ItemGroup>
@@ -152,6 +157,7 @@
     <ClCompile Include="..\..\source\TailTipUI_area.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_button.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_image.cpp" />
+    <ClCompile Include="..\..\source\TailTipUI_input.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_text.cpp" />
     <ClCompile Include="..\..\source\TailTipUI_xml.cpp" />
   </ItemGroup>

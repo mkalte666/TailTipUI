@@ -27,6 +27,7 @@ namespace TailTipUI {
 
 		virtual void _InternalHoverEvent();
 		virtual void _InternalStopHoverEvent();
+		void _UpdateText();
 	};
 
 };

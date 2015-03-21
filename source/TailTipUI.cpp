@@ -9,6 +9,8 @@ namespace TailTipUI {
 	ButtoninfoCallbackType Info::buttoncallback = ButtoninfoCallbackType();
 	FontLoaderFunctionType Info::fontCallback = defaultFontLoader;
 	ImageLoaderFunctionType Info::imageCallback = ImageLoaderFunctionType();
+	TextBufferResetFunctionType Info::textBufferResetCallback = TextBufferResetFunctionType();
+	GetTextBufferFunctionType Info::getTextBufferCallback = GetTextBufferFunctionType();
 
 	Info::Info(std::string windowname, int w, int h)
 	{
@@ -27,7 +29,7 @@ namespace TailTipUI {
 		return glm::vec4(0);
 	}
 
-	SDL_Keycode Info::GetCurrentButton()
+	const Uint8* Info::GetCurrentButton()
 	{
 		if (buttoncallback)
 			return buttoncallback();
@@ -50,6 +52,21 @@ namespace TailTipUI {
 		return NULL;
 	}
 
+	std::string Info::GetTextBuffer()
+	{
+		if (getTextBufferCallback) {
+			return getTextBufferCallback();
+		}
+		return "";
+	}
+
+	void Info::ResetTextBuffer()
+	{
+		if (textBufferResetCallback) {
+			textBufferResetCallback();
+		}
+	}
+
 	void Info::SetMouseCallback(MouseinfoCallbackType c)
 	{
 		mousecallback = c;
@@ -69,6 +86,17 @@ namespace TailTipUI {
 	{
 		imageCallback = c;
 	}
+
+	void Info::SetTextBufferResetCallback(TextBufferResetFunctionType c)
+	{
+		textBufferResetCallback = c;
+	}
+
+	void Info::SetGetTextBufferCallback(GetTextBufferFunctionType c)
+	{
+		getTextBufferCallback = c;
+	}
+
 
 	TTF_Font* defaultFontLoader(std::string name, int size)
 	{
@@ -230,9 +258,12 @@ namespace TailTipUI {
 	//Render also updates the callbaks, ...
 	void GeneralElement::Render()
 	{
-		if (hidden) return;
+		if (hidden) {
+			inFocus = false;
+			return;
+		}
 		glm::vec4 mouse = Info::GetMouseInfo();
-		SDL_Keycode key = Info::GetCurrentButton();
+		const Uint8* key = Info::GetCurrentButton();
 		bool hoverstate = GetHover();
 		if (hoverstate && !oldHoverstate) {
 			if (HoverCallback) {
@@ -270,6 +301,10 @@ namespace TailTipUI {
 				if (LeftCallback) {
 					LeftCallback(this);
 				}
+				if (!inFocus) {
+					inFocus = true;
+					_Focus();
+				}
 				_InternalLeftclickEvent();
 			}
 		}
@@ -280,10 +315,19 @@ namespace TailTipUI {
 			if (RightCallback) {
 				RightCallback(this);
 			}
+			if (!inFocus) {
+				inFocus = true;
+				_Focus();
+			}
 			_InternalRightclickEvent();
 		}
+
+		if (inFocus && !GetHover() && (mouse[2] == 1 || mouse[3] == 1)) {
+			inFocus = false;
+			_LostFocus();
+		}
 		draggmouse = mouse;
-		draggkey = key;
+		draggkey = (Uint8*)key;
 		_Render();
 		for (auto c : children) {
 			c->Render();
@@ -411,6 +455,10 @@ namespace TailTipUI {
 	{
 		RightCallback = c;
 	}
+	void GeneralElement::SetSpecialCallback(ElementCallbackType c)
+	{
+		specialCallback = c;
+	}
 
 	void GeneralElement::SetSmoothing(float s) 
 	{
@@ -437,6 +485,8 @@ namespace TailTipUI {
 	void GeneralElement::_InternalLeftclickEvent(){}
 	void GeneralElement::_InternalRightclickEvent(){}
 
+	void GeneralElement::_Focus() {}
+	void GeneralElement::_LostFocus() {}
 
 //Child element class functions
 
@@ -478,10 +528,19 @@ namespace TailTipUI {
 	void Root::Render()
 	{
 		GLint oldFBO;
+		GLint oldTEX;
+		GLint oldPRG;
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &oldFBO);
+		glGetIntegerv(GL_CURRENT_PROGRAM, &oldPRG);
+		glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTEX);
+		
 		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 		GeneralElement::Render();
+	
 		glBindFramebuffer(GL_FRAMEBUFFER, oldFBO);
+		glUseProgram(oldPRG);
+		glBindTexture(GL_TEXTURE_2D, oldTEX);
+		
 	}
 
 	//below the blody opengl foo and texture management and stuff
@@ -496,7 +555,7 @@ namespace TailTipUI {
 		"	float yscale = (vertexPosition_screenspace.y + 1) / 2;"
 		"	vec2 inpos = vec2(position.x * 2 - 1 + xscale * 2 * position[2], (1-position.y-position[3]) * 2 - 1 + yscale * 2 * position[3]);"
 		"	gl_Position = vec4(inpos, 0, 1.0);"
-		"	UV = vec2(xscale, 1-yscale);"
+		"	UV = vec2(xscale, yscale);"
 		"}"
 		;
 
@@ -577,6 +636,10 @@ namespace TailTipUI {
 		"}"
 		;
 
+	const char* fragmentShaderLine =
+		"#version 330 core"
+		;
+
 	static const GLfloat g_quad[] = {
 		-1.0f, -1.0f, 0.0f,
 		1.0f, -1.0f, 0.0f,
@@ -607,13 +670,28 @@ namespace TailTipUI {
 			}
 		}
 
+		//the read-in textures will have wrong y-axis if read directly into ogl. 
+		//we need to mirror them!
+		unsigned int pixelSize = (textureFormat == GL_RGBA || textureFormat==GL_BGRA) ? 4 : 3;
+		unsigned char* mirrorData = new unsigned char[pixelSize*s->w*s->h];
+		//makes copying easyer
+		unsigned char* tmp = (unsigned char*)s->pixels;
+		for (unsigned int y = 0; y < s->h; y++) {
+			int invY = (s->h-1) - y;
+			for (unsigned int x = 0; x < s->w*pixelSize; x++) {
+					mirrorData[x + y*s->pitch ] = ((unsigned char*)s->pixels)[x + invY*s->pitch];
+			}
+		}
+
+		//Throw at ogl
 		GLuint TextureId = GL_INVALID_VALUE;
 		glGenTextures(1, &TextureId);
 		glBindTexture(GL_TEXTURE_2D, TextureId);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, textureFormat, GL_UNSIGNED_BYTE, s->pixels);		
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, textureFormat, GL_UNSIGNED_BYTE, mirrorData);
+		delete[] mirrorData;
 		return TextureId;
 	}
 
@@ -748,6 +826,27 @@ namespace TailTipUI {
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(0);
+	}
+
+	void RenderLineColored(glm::vec4 color, glm::vec4 pos, float w, float s) {
+		static GLuint programId = 0;
+		static GLuint posPos = 0;
+		static GLuint colorPos = 0;
+		static GLuint sPos = 0;
+		static GLuint wPos = 0;
+		static GLuint quad = 0;
+		if (programId == 0) {
+			programId = _LoadProgram(vertexShader, fragmentShaderLine);
+			posPos = glGetUniformLocation(programId, "position");
+			colorPos = glGetUniformLocation(programId, "incolor");
+			sPos = glGetUniformLocation(programId, "s");
+			wPos = glGetUniformLocation(programId, "w");
+			glGenBuffers(1, &quad);
+			glBindBuffer(GL_ARRAY_BUFFER, quad);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad), g_quad, GL_STATIC_DRAW);
+		}
+
+
 	}
 }; 
 
