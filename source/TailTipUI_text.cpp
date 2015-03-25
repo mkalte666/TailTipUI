@@ -75,7 +75,7 @@ namespace TailTipUI {
 		if (font == nullptr || name == "") {
 			return;
 		}
-		SDL_Color color = { 255 * (int)fgcolor.r, 255 * (int)fgcolor.g, 255 * (int)fgcolor.b };
+		SDL_Color color = { static_cast<Uint8>(255*fgcolor.r), static_cast<Uint8>(255*fgcolor.g), static_cast<Uint8>(255*fgcolor.b) };
 		SDL_Surface* s;
 		s = TTF_RenderText_Blended(font, name.c_str(), color);
 		

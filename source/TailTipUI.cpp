@@ -129,7 +129,7 @@ namespace TailTipUI {
 			return;
 		}
 		valid = true;
-		Info::Info(name, width, height);
+		Info(name, width, height);
 	}
 
 	StandaloneSetup::~StandaloneSetup()
