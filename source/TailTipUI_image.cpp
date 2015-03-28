@@ -9,7 +9,7 @@ namespace TailTipUI
 	}
 
 	Image::Image(GLuint id, bool freeOnDelete)
-		: texId(id), freeOnDelete(freeOnDelete)
+		: freeOnDelete(freeOnDelete), texId(id)
 	{
 
 	}

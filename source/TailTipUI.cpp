@@ -49,7 +49,7 @@ namespace TailTipUI {
 		if (imageCallback) {
 			return imageCallback(name);
 		}
-		return NULL;
+		return 0;
 	}
 
 	std::string Info::GetTextBuffer()
@@ -109,13 +109,13 @@ namespace TailTipUI {
 
 
 	StandaloneSetup::StandaloneSetup(std::string name, int width, int height, int x, int y, Uint32 flags, int mayor, int minor, int depth)
-		: name(name), valid(false), window(nullptr)
+		: name(name), window(nullptr), valid(false)
 	{
 		if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
 			return;
 		}
 
-		if (mayor < 3 || mayor == 3 && minor < 3 || depth != 16 && depth != 24 && depth != 32 || width == 0 || height == 0) {
+		if (mayor < 3 || (mayor == 3 && minor < 3) || (depth != 16 && depth != 24 && depth != 32) || width == 0 || height == 0) {
 			return;
 		}
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, mayor);
@@ -161,9 +161,12 @@ namespace TailTipUI {
 	}
 
 	GeneralElement::GeneralElement()
-		: pos(0), hidden(false), parent(nullptr), font(nullptr), draggable(nullptr), blockParentdragging(nullptr),
-		oldHoverstate(false), isDragged(false), renderRadius(0), smoothing(0.00f), radiusParameter(0.1f),
-		fgcolor(0), bgcolor(0), eventColor(0), usesEventColor(false)
+		: parent(nullptr), pos(0), name(""),id(""),
+		fgcolor(0),bgcolor(0),eventColor(0),usesEventColor(false),
+		font(nullptr), hidden(false), draggable(nullptr), isDragged(false),
+		blockParentdragging(nullptr), draggmouse(0),draggkey(nullptr),
+		oldHoverstate(false), inFocus(false), smoothing(0.0f),renderRadius(0), 
+		radiusParameter(0.1f)
 	{
 
 	}
@@ -293,7 +296,7 @@ namespace TailTipUI {
 				//Only dragg if no child is hoverd that is dragable and does not block parentdragging
 				bool childBlock = false;
 				for (auto c : children) {
-					childBlock |= c->GetHover() && (c->GetDraggable() || c->GetBlockParentdragging()) || c->IsCurrentlyDragged();
+					childBlock |= (c->GetHover() && (c->GetDraggable() || c->GetBlockParentdragging())) || c->IsCurrentlyDragged();
 				}
 				isDragged = !childBlock;
 			}
@@ -665,8 +668,6 @@ namespace TailTipUI {
 		//we need to mirror them!
 		unsigned int pixelSize = (textureFormat == GL_RGBA || textureFormat==GL_BGRA) ? 4 : 3;
 		unsigned char* mirrorData = new unsigned char[pixelSize*s->w*s->h];
-		//makes copying easyer
-		unsigned char* tmp = (unsigned char*)s->pixels;
 		for (unsigned int y = 0; y < s->h; y++) {
 			int invY = (s->h-1) - y;
 			for (unsigned int x = 0; x < s->w*pixelSize; x++) {
@@ -767,7 +768,7 @@ namespace TailTipUI {
 		
 		glUniform4f(posPos, pos[0], pos[1], pos[2], pos[3]);
 		float rFactor = sqrt(2 * b*b);
-		glUniform4f(rPos, sqrt(2 * b*b) - radiusKomponent[0], sqrt(2 * b*b) - radiusKomponent[1], sqrt(2 * b*b) - radiusKomponent[2], sqrt(2 * b*b) - radiusKomponent[3]);
+		glUniform4f(rPos,rFactor - radiusKomponent[0], rFactor - radiusKomponent[1], rFactor - radiusKomponent[2], rFactor - radiusKomponent[3]);
 		glUniform1f(bPos, b);
 		glUniform1f(sPos, s);
 		glEnableVertexAttribArray(0);
@@ -809,7 +810,7 @@ namespace TailTipUI {
 		glUniform4f(posPos, pos[0], pos[1], pos[2], pos[3]);
 		glUniform4f(colorPos, color[0], color[1], color[2], color[3]);
 		float rFactor = sqrt(2 * b*b);
-		glUniform4f(rPos, sqrt(2 * b*b) - radiusKomponent[0], sqrt(2 * b*b) - radiusKomponent[1], sqrt(2 * b*b) - radiusKomponent[2], sqrt(2 * b*b) - radiusKomponent[3]);
+		glUniform4f(rPos,rFactor - radiusKomponent[0],rFactor - radiusKomponent[1], rFactor - radiusKomponent[2], rFactor - radiusKomponent[3]);
 		glUniform1f(bPos, b);
 		glUniform1f(sPos, s);
 		glEnableVertexAttribArray(0);

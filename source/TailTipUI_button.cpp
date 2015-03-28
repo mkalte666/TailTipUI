@@ -16,7 +16,6 @@ namespace TailTipUI {
 		widthlockText = true;
 		buttonText = new Text(text);
 		AttatchChild(buttonText);
-		glm::vec4 textpos = buttonText->GetPos();
 	}
 
 	Button::~Button()
@@ -28,10 +27,6 @@ namespace TailTipUI {
 	{
 		buttonText->ForceUpdate();
 		glm::vec4 textpos = buttonText->GetPos();
-		glm::vec4 textposScaled = buttonText->RelativePositionToParent();
-		glm::vec4 ownposScaled = RelativePositionToParent();
-		float w = (textposScaled[2]) / ownposScaled[2];
-		float h = (textposScaled[3]) / ownposScaled[3];
 		buttonText->SetPos(glm::vec4(0.f, 0.f, textpos[2], textpos[3]));
 	}
 

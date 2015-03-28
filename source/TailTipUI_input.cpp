@@ -3,7 +3,7 @@
 namespace TailTipUI
 {
 	Input::Input()
-		: wasDeleting(false), maxChars(0)
+		: maxChars(0), wasDeleting(false)
 	{
 		InputText = new Text();
 		InputText->SetPos(glm::vec4(0.05, 0.1, .0f, .8f));

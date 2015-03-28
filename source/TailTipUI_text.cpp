@@ -88,7 +88,7 @@ namespace TailTipUI {
 			pos[2] = pos[3] * textsizeratio;
 		}
 		if (s != nullptr) {
-			if (tex != NULL) {
+			if (tex != 0) {
 				glDeleteTextures(1, &tex);
 			}
 			tex = SurfaceToTexture(s);

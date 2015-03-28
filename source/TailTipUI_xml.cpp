@@ -153,13 +153,13 @@ namespace TailTipUI {
 	}
 
 	XMLLoader::XMLLoader(GLuint destinationFramebuffer)
-		: framebuffer(destinationFramebuffer), rootElelent(nullptr)
+		: framebuffer(destinationFramebuffer)
 	{
 
 	}
 
 	XMLLoader::XMLLoader(GLuint destinationFramebuffer, std::string infile)
-		: framebuffer(destinationFramebuffer), rootElelent(nullptr)
+		: framebuffer(destinationFramebuffer)
 	{
 		Load(infile);
 	}
