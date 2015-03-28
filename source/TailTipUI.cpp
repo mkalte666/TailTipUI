@@ -515,15 +515,6 @@ namespace TailTipUI {
 
 	}
 
-	void Root::AttatchChild(ChildElement* child)
-	{
-		GeneralElement::AttatchChild(child);
-	}
-
-	void Root::DeattatchChild(ChildElement* child)
-	{
-		GeneralElement::DeattatchChild(child);
-	}
 
 	void Root::Render()
 	{

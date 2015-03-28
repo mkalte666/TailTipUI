@@ -12,6 +12,10 @@ all: checkdirs $(OBJECTS)
 	ar rcs $(BUILDDIR)/$(LIB) $(OBJECTS)
 	cp $(BUILDDIR)/$(LIB) ./bin/
 
+clean: checkdirs
+	-rm -rf $(BUILDDIR)/*
+	-rm -rf $(DSTDIR)/*
+
 $(BUILDDIR)/%.o: %.cpp
 	$(CC) $(CXXFLAGS) $< -o $@
 
