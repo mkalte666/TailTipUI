@@ -65,6 +65,10 @@ namespace TailTipUI
 			}
 			if (name.size() > 0 && Info::GetCurrentButton()[SDL_SCANCODE_BACKSPACE] && !wasDeleting) {
 				name.pop_back();
+				//oh thats was not an ascii character 
+				if(name.size()>0 && name[name.size()-1] > 127) {
+					name.pop_back();
+				}
 				wasDeleting = true;
 			}
 			else {

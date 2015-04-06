@@ -18,6 +18,7 @@ namespace TailTipUI {
 	ELEMENT_SETTING("font", SetFont, dstElement, strToFont, name, content) \
 	ELEMENT_SETTING("color", SetForgroundColor, dstElement, strToVec4, name, content) \
 	ELEMENT_SETTING("bgcolor", SetBackgroundColor, dstElement, strToVec4, name, content) \
+	ELEMENT_SETTING("centered", SetCentered, dstElement, strToBool, name, content) \
 	ELEMENT_SETTING("eventcolor", SetEventColor, dstElement, strToVec4, name, content) \
 	ELEMENT_SETTING("hidden", SetHidden, dstElement, strToBool, name, content) \
 	ELEMENT_SETTING("draggable", SetDraggable, dstElement, strToBool, name, content) \
@@ -26,8 +27,9 @@ namespace TailTipUI {
 	ELEMENT_SETTING("radiusParameter", SetRadiusParameter, dstElement, strToFloat, name, content) \
 	ELEMENT_SETTING("smoothing", SetSmoothing, dstElement, strToFloat, name, content) \
 	SPECIAL_ELEMENT_SETTING("text", tagname, Text, "widthlock", SetWidthLock, dstElement, strToBool, name, content) \
-	SPECIAL_ELEMENT_SETTING("button", tagname, Button, "widthlock", SetTextWidthlock, dstElement, strToBool, name, content) \
+	SPECIAL_ELEMENT_SETTING("button", tagname, Button, "widthlock", SetWidthLock, dstElement, strToBool, name, content) \
 	SPECIAL_ELEMENT_SETTING("button", tagname, Button, "hovercolor", SetEventColor, dstElement, strToVec4, name, content) \
+	SPECIAL_ELEMENT_SETTING("button", tagname, Button, "textscale", SetTextScale, dstElement, strToFloat, name, content) \
 	SPECIAL_ELEMENT_SETTING("image", tagname, Image, "texturename", SetImage, dstElement, strToImage, name, content)
 
 #define TAG_COMPARE(cmpname,name,classname,dstElement) else if(name==cmpname) { \

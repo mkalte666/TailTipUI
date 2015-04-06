@@ -161,7 +161,7 @@ namespace TailTipUI {
 	}
 
 	GeneralElement::GeneralElement()
-		: parent(nullptr), pos(0), name(""),id(""),
+		: parent(nullptr), pos(0), centered(false), name(""),id(""),
 		fgcolor(0),bgcolor(0),eventColor(0),usesEventColor(false),
 		font(nullptr), hidden(false), draggable(nullptr), isDragged(false),
 		blockParentdragging(nullptr), draggmouse(0),draggkey(nullptr),
@@ -225,6 +225,16 @@ namespace TailTipUI {
 	glm::vec4 GeneralElement::GetPos() {
 		return pos;
 	}
+
+	void GeneralElement::SetCentered(bool b)
+	{
+		centered = b;
+	}
+
+	bool GeneralElement::GetCentered()
+	{
+		return centered;
+	}	
 
 	void GeneralElement::SetName(std::string newname) {
 		name = newname;
@@ -342,11 +352,17 @@ namespace TailTipUI {
 	}
 
 	glm::vec4 GeneralElement::RelativePositionToParent() {
+		glm::vec4 p;
 		if (parent == nullptr) {
-			return pos;
+			p = pos;
+		} else {
+			glm::vec4 parentPos = parent->RelativePositionToParent();
+			p = glm::vec4(parentPos[0] + pos[0] * parentPos[2], parentPos[1] + pos[1] * parentPos[3], pos[2] * parentPos[2], pos[3] * parentPos[3]); 
 		}
-		glm::vec4 parentPos = parent->RelativePositionToParent();
-		return glm::vec4(parentPos[0] + pos[0] * parentPos[2], parentPos[1] + pos[1] * parentPos[3], pos[2] * parentPos[2], pos[3] * parentPos[3]);
+		if(centered) {
+			p.x = p.x - 0.5f*p[2];	
+		}
+		return p;
 	}
 
 	void GeneralElement::SetForgroundColor(glm::vec4 color)

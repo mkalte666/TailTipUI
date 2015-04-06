@@ -23,7 +23,16 @@ namespace TailTipUI {
 		wlock = false;
 		_UpdateText();
 	}
-
+	
+	void Text::SetPos(glm::vec4 p)
+	{
+		bool reset =false;
+		if(p[3]!=pos[3]||p[2]!=pos[2]) {
+			reset = true;
+		}
+		GeneralElement::SetPos(p);
+		_UpdateText();
+	}
 	void Text::SetFont(TTF_Font* newfont) 
 	{
 		if (newfont == nullptr) return;
@@ -52,15 +61,11 @@ namespace TailTipUI {
 		return wlock;
 	}
 
+	
+
 	glm::vec4 Text::RelativePositionToParent()
 	{
 		glm::vec4 p = ChildElement::RelativePositionToParent();
-		if (wlock) {
-			p[3] = p[2] * textsizeratio;
-		}
-		else {
-			p[2] = p[3] * textsizeratio;
-		}
 		return p;
 	}
 
@@ -77,16 +82,11 @@ namespace TailTipUI {
 		}
 		SDL_Color color = { static_cast<Uint8>(255*fgcolor.r), static_cast<Uint8>(255*fgcolor.g), static_cast<Uint8>(255*fgcolor.b) };
 		SDL_Surface* s;
-		s = TTF_RenderText_Blended(font, name.c_str(), color);
+		s = TTF_RenderUTF8_Blended(font, name.c_str(), color);
 		
-		if (wlock) {
-			textsizeratio = (float)s->h / (float)s->w;
-			pos[3] = pos[2] * textsizeratio;
-		}
-		else {
-			textsizeratio = (float)s->w / (float)s->h;
-			pos[2] = pos[3] * textsizeratio;
-		}
+			
+		textsizeratio = (float)s->w / (float)s->h;
+		pos[2] = pos[3] * textsizeratio;	
 		if (s != nullptr) {
 			if (tex != 0) {
 				glDeleteTextures(1, &tex);

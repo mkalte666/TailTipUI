@@ -3,19 +3,14 @@
 namespace TailTipUI {
 
 	Button::Button()
+		: Text(), textScale(1.0f)
 	{
-		widthlockText = false;
-		buttonText = new Text();
-		buttonText->SetWidthLock(widthlockText);
-		buttonText->SetPos(glm::vec4(.0f, .0f, 1.f, 1.f));
-		AttatchChild(buttonText);
+
 	}
 
 	Button::Button(std::string text)
+		: Text(text), textScale(1.0f)
 	{
-		widthlockText = true;
-		buttonText = new Text(text);
-		AttatchChild(buttonText);
 	}
 
 	Button::~Button()
@@ -23,68 +18,19 @@ namespace TailTipUI {
 		//we MUST NOT nelete buttonText since thats handled by the child-element system
 	}
 
-	void Button::_UpdateText()
+	void Button::_Render()
 	{
-		buttonText->ForceUpdate();
-		glm::vec4 textpos = buttonText->GetPos();
-		buttonText->SetPos(glm::vec4(0.f, 0.f, textpos[2], textpos[3]));
-	}
-
-	void Button::SetFont(TTF_Font* newfont) 
-	{
-		Area::SetFont(newfont);
-		if (buttonText != nullptr) {
-			buttonText->SetFont(newfont);
-			glm::vec4 textpos = buttonText->GetPos();
-			buttonText->SetPos(glm::vec4(0.5 - textpos[2] / 2.0f, 0.1, textpos[2], textpos[3]));
+		RenderSingleColor(bgcolor, RelativePositionToParent(), renderRadius, radiusParameter, smoothing);
+		glm::vec4 tmpPos = pos;
+		if(!centered) {
+			pos.x =pos.x+(1.0f-textScale)*0.5f*pos[2];
 		}
-		
-	}
-
-	void Button::SetName(std::string newname)
-	{
-		Area::SetName(newname);
-		if (buttonText != nullptr) {
-			buttonText->SetName(newname);
-			_UpdateText();
-		}
-	}
-
-	void Button::SetId(std::string id)
-	{
-		Area::SetId(id);
-
-		if (buttonText != nullptr) {
-			buttonText->SetId(id + "_text");
-		}
-	}
-
-	void Button::SetPos(glm::vec4 newpos)
-	{
-		Area::SetPos(newpos);
-
-		if (buttonText != nullptr) {
-			_UpdateText();
-		}
-	}
-
-	void Button::SetForgroundColor(glm::vec4 color)
-	{
-		Area::SetForgroundColor(color);
-		if (buttonText != nullptr) {
-			buttonText->SetForgroundColor(color);
-		}
-	}
-
-	void Button::SetTextWidthlock(bool b)
-	{
-		widthlockText = b;
-	}
-
-	bool Button::GetTextWidthlock()
-	{
-		return widthlockText;
-	}
+		pos.y =pos.y+(1.0f-textScale)*0.5f*pos[3];
+		pos[2] = pos[2]*textScale;
+		pos[3] = pos[3]*textScale;
+		Text::_Render();
+		pos = tmpPos;
+	}	
 
 	void Button::_InternalHoverEvent()
 	{
@@ -103,5 +49,13 @@ namespace TailTipUI {
 			eventColor = bgcolor;
 		}
 
+	}
+
+	void Button::SetTextScale(float s) {
+		textScale = s;
+	}
+
+	float Button::GetTextScale() {
+		return textScale;
 	}
 }; //namespace TailTipUI
