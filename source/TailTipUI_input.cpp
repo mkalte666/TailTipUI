@@ -3,11 +3,9 @@
 namespace TailTipUI
 {
 	Input::Input()
-		: maxChars(0), wasDeleting(false)
+		: bgpos(0.0f),maxChars(0), wasDeleting(false)
 	{
-		InputText = new Text();
-		InputText->SetPos(glm::vec4(0.05, 0.1, .0f, .8f));
-		AttatchChild(InputText);
+	
 	}
 
 	Input::~Input()
@@ -15,59 +13,47 @@ namespace TailTipUI
 
 	}
 
-	void Input::SetFont(TTF_Font* newfont)
-	{
-		Area::SetFont(newfont);
-		if (InputText != nullptr) {
-			InputText->SetFont(newfont);
-		}
-
+	void Input::SetPos(glm::vec4 p) {
+		Text::SetPos(p);
+		bgpos = p;
 	}
 
-	void Input::SetName(std::string newname)
-	{
-		Area::SetName(newname);
-		if (InputText != nullptr) {
-			InputText->SetName(newname);
-		}
+	glm::vec4 Input::GetPos() {
+		return bgpos;
 	}
-
-	void Input::SetId(std::string id)
+	
+	bool Input::GetHover()
 	{
-		Area::SetId(id);
-
-		if (InputText != nullptr) {
-			InputText->SetId(id + "_text");
-		}
+		bool ret = false;
+		glm::vec4 tmp = pos;
+		pos = bgpos;
+		ret = GeneralElement::GetHover();
+		pos = tmp;
+		return ret;
 	}
-
-
-	void Input::SetForgroundColor(glm::vec4 color)
-	{
-		Area::SetForgroundColor(color);
-		if (InputText != nullptr) {
-			InputText->SetForgroundColor(color);
-		}
-	}
-
 	void Input::_Render()
 	{
-		Area::_Render();
+		glm::vec4 tmppos = pos;
+		pos = bgpos;
+		RenderSingleColor(bgcolor, RelativePositionToParent(), renderRadius, radiusParameter, smoothing);	
+		pos = tmppos;
+			
 		if (inFocus) {
 			std::string b = Info::GetTextBuffer();
-			std::string oldName = name;
-			name+= b;
-
+			std::string oldName = intext;
+			intext+= b;
+			name+=b;
+			Info::ResetTextBuffer();
 			if (name.size() > 0 && specialCallback && Info::GetCurrentButton()[SDL_SCANCODE_RETURN]) {
 				specialCallback(this);
 				name.clear();
 				Info::ResetTextBuffer();
 			}
 			if (name.size() > 0 && Info::GetCurrentButton()[SDL_SCANCODE_BACKSPACE] && !wasDeleting) {
-				name.pop_back();
+				intext.pop_back();
 				//oh thats was not an ascii character 
-				if(name.size()>0 && name[name.size()-1] > 127) {
-					name.pop_back();
+				if(intext.size()>0 && name[name.size()-1] > 127) {
+					intext.pop_back();
 				}
 				wasDeleting = true;
 			}
@@ -75,35 +61,34 @@ namespace TailTipUI
 				wasDeleting = false;
 			}
 
-			std::string textName = name;
-			if (oldName != name) {
-				InputText->SetName(textName);
+			std::string textName = intext;
+			if (oldName != intext) {
+				Text::SetName(textName);
 			}
 
-			glm::vec4 textPos = InputText->RelativePositionToParent();
-			glm::vec4 ownPos = RelativePositionToParent();
-			if (textName.size() > maxChars && textPos.x + textPos[2] > ownPos.x + ownPos[2]){
+			glm::vec4 textPos = Text::GetPos();
+			if (textName.size() > maxChars && textPos.x + textPos[2] > 1.0f){
 				if (maxChars != 0 ) {
 					//we check agains maxChars+1: if it DOSNT collide, we decrese maxChars by one, otherwise nawt.
 					textName = name.substr(name.size() - maxChars-1, maxChars+1);
-					InputText->SetName(textName);
-					textPos = InputText->RelativePositionToParent();
-					if (!(textPos.x + textPos[2] > ownPos.x + ownPos[2])) {
+					Text::SetName(textName);
+					textPos = RelativePositionToParent();
+					if (!(textPos.x + textPos[2] > 1.0f)) {
 						maxChars++;
 					}
 					else {
 						textName = name.substr(name.size() - maxChars, maxChars);
-						InputText->SetName(textName);
-						textPos = InputText->RelativePositionToParent();
+						SetName(textName);
+						textPos = RelativePositionToParent();
 					}
 				}
-				if (maxChars == 0  || (textPos.x + textPos[2] > ownPos.x + ownPos[2])) {
+				if (maxChars == 0  || (textPos.x + textPos[2] > 1.0f)) {
 					maxChars = textName.size();
-					while (textName.size() > 1 && textPos.x + textPos[2] > ownPos.x + ownPos[2]) {
+					while (textName.size() > 1 && textPos.x + textPos[2] > 1.0f) {
 						textName.erase(textName.begin());
 						maxChars--;
-						InputText->SetName(textName);
-						textPos = InputText->RelativePositionToParent();
+						SetName(textName);
+						textPos = RelativePositionToParent();
 					}
 				}
 			}
@@ -112,6 +97,7 @@ namespace TailTipUI
 		else {
 			wasDeleting = false;
 		}
+		Text::_Render();	
 	}
 
 	void Input::_Focus()
