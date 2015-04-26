@@ -47,6 +47,7 @@ namespace TailTipUI
 			if (name.size() > 0 && specialCallback && Info::GetCurrentButton()[SDL_SCANCODE_RETURN]) {
 				specialCallback(this);
 				name.clear();
+				intext.clear();
 				Info::ResetTextBuffer();
 			}
 			if (name.size() > 0 && Info::GetCurrentButton()[SDL_SCANCODE_BACKSPACE] && !wasDeleting) {
