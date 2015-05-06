@@ -66,6 +66,13 @@ namespace TailTipUI {
 	glm::vec4 Text::RelativePositionToParent()
 	{
 		glm::vec4 p = ChildElement::RelativePositionToParent();
+		//fix scaling if parent objects arnt squares
+		float oldW = pos[2];
+		p[2] = (pos[2] / pos[3])*p[3];	
+		//and recenter
+		if (centered) {
+			p.x = p.x + (oldW - p[2]) / 2.0f;
+		}
 		return p;
 	}
 

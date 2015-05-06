@@ -67,29 +67,25 @@ namespace TailTipUI
 				Text::SetName(textName);
 			}
 
-			glm::vec4 textPos = Text::GetPos();
-			if (textName.size() > maxChars && textPos.x + textPos[2] > 1.0f){
+			if (textName.size() > maxChars && pos.x + pos[2] > bgpos.x + bgpos[2]){
 				if (maxChars != 0 ) {
 					//we check agains maxChars+1: if it DOSNT collide, we decrese maxChars by one, otherwise nawt.
 					textName = name.substr(name.size() - maxChars-1, maxChars+1);
 					Text::SetName(textName);
-					textPos = RelativePositionToParent();
-					if (!(textPos.x + textPos[2] > 1.0f)) {
+					if (!(pos.x + pos[2] > bgpos.x + bgpos[2])) {
 						maxChars++;
 					}
 					else {
 						textName = name.substr(name.size() - maxChars, maxChars);
 						SetName(textName);
-						textPos = RelativePositionToParent();
 					}
 				}
-				if (maxChars == 0  || (textPos.x + textPos[2] > 1.0f)) {
+				if (maxChars == 0 || (pos.x + pos[2] > bgpos.x + bgpos[2])) {
 					maxChars = textName.size();
-					while (textName.size() > 1 && textPos.x + textPos[2] > 1.0f) {
+					while (textName.size() > 1 && pos.x + pos[2] > bgpos.x + bgpos[2]) {
 						textName.erase(textName.begin());
 						maxChars--;
 						SetName(textName);
-						textPos = RelativePositionToParent();
 					}
 				}
 			}
