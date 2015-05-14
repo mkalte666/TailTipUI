@@ -41,16 +41,16 @@ namespace TailTipUI
 		if (inFocus) {
 			std::string b = Info::GetTextBuffer();
 			std::string oldName = intext;
-			intext+= b;
-			name+=b;
-			Info::ResetTextBuffer();
+			intext= b;
+			name=b;
+			//Info::ResetTextBuffer();
 			if (name.size() > 0 && specialCallback && Info::GetCurrentButton()[SDL_SCANCODE_RETURN]) {
 				specialCallback(this);
 				name.clear();
 				intext.clear();
 				Info::ResetTextBuffer();
 			}
-			if (name.size() > 0 && Info::GetCurrentButton()[SDL_SCANCODE_BACKSPACE] && !wasDeleting) {
+			/*if (name.size() > 0 && Info::GetCurrentButton()[SDL_SCANCODE_BACKSPACE] && !wasDeleting) {
 				intext.pop_back();
 				//oh thats was not an ascii character 
 				if(intext.size()>0 && name[name.size()-1] > 127) {
@@ -61,7 +61,7 @@ namespace TailTipUI
 			else {
 				wasDeleting = false;
 			}
-
+			*/
 			std::string textName = intext;
 			if (oldName != intext) {
 				Text::SetName(textName);
@@ -89,7 +89,7 @@ namespace TailTipUI
 					}
 				}
 			}
-			Info::ResetTextBuffer();
+			//Info::ResetTextBuffer();
 		}
 		else {
 			wasDeleting = false;
@@ -100,11 +100,10 @@ namespace TailTipUI
 	void Input::_Focus()
 	{
 		Info::ResetTextBuffer();
+		Info::SetTextBuffer(name);
 	}
 
 	void Input::_LostFocus()
 	{
-		name += Info::GetTextBuffer();
-		Info::ResetTextBuffer();
 	}
 };

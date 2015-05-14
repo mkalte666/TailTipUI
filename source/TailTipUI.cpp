@@ -11,6 +11,7 @@ namespace TailTipUI {
 	ImageLoaderFunctionType Info::imageCallback = ImageLoaderFunctionType();
 	TextBufferResetFunctionType Info::textBufferResetCallback = TextBufferResetFunctionType();
 	GetTextBufferFunctionType Info::getTextBufferCallback = GetTextBufferFunctionType();
+	SetTextBufferFunctionType Info::setTextBufferCallback = SetTextBufferFunctionType();
 
 	Info::Info(std::string windowname, int w, int h)
 	{
@@ -67,6 +68,13 @@ namespace TailTipUI {
 		}
 	}
 
+	void Info::SetTextBuffer(std::string t)
+	{
+		if (setTextBufferCallback) {
+			setTextBufferCallback(t);
+		}
+	}
+
 	void Info::SetMouseCallback(MouseinfoCallbackType c)
 	{
 		mousecallback = c;
@@ -97,6 +105,10 @@ namespace TailTipUI {
 		getTextBufferCallback = c;
 	}
 
+	void Info::SetTextBufferSetCallback(SetTextBufferFunctionType c)
+	{
+		setTextBufferCallback = c;
+	}
 
 	TTF_Font* defaultFontLoader(std::string name, int size)
 	{
